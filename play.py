@@ -1,3 +1,4 @@
+from enum import Flag
 import pygame
 import sys
 import os
@@ -16,16 +17,16 @@ BG_COLOR = '#92877d'
 
 SCREENSIZE = (370, 450)
 
-MAX_SCORE_FILEPATH = 'score'
 '''字体路径'''
 FONTPATH = os.path.join(os.getcwd(), './resources/JetBrainsMono-Bold.ttf')
 '''背景音乐路径'''
 BGMPATH = os.path.join(os.getcwd(), './resources/bgm.mp3')
-MODELPATH = "./resources/parameter19.pkl"
+MODELPATH = "./resources/best_512.pkl"
 '''其他一些必要的常量'''
 MARGIN_SIZE = 10
 BLOCK_SIZE = 80
 GAME_MATRIX_SIZE = (4, 4)
+# GAME_MATRIX_SIZE = (5, 5)
 DEVICE = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 NETWORK = Network().to(DEVICE)
 NETWORK.load_state_dict(torch.load(MODELPATH, map_location=DEVICE))
@@ -45,6 +46,7 @@ def getColorByNumber(number):
 
 '''将2048游戏的当前数字排列画到屏幕上'''
 def drawGameMatrix(screen, game_matrix):
+    screen.fill(pygame.Color(BG_COLOR))
     for i in range(len(game_matrix)):
         for j in range(len(game_matrix[i])):
             number = game_matrix[i][j]
@@ -53,7 +55,7 @@ def drawGameMatrix(screen, game_matrix):
             pygame.draw.rect(screen, pygame.Color(getColorByNumber(number)[0]), (x, y, BLOCK_SIZE, BLOCK_SIZE))
             if number != 0:
                 font_color = pygame.Color(getColorByNumber(number)[1])
-                font_size = BLOCK_SIZE - 10 * len(str(number))
+                font_size = BLOCK_SIZE - 15 * len(str(number))
                 font = pygame.font.Font(FONTPATH, font_size)
                 text = font.render(str(number), True, font_color)
                 text_rect = text.get_rect()
@@ -78,15 +80,15 @@ def drawScore(screen, score, max_score=2048):
     return (start_x, start_y)
 
 '''游戏结束界面'''
-def endInterface(screen):
+def endInterface(screen, score):
     font_size_big = 60
     font_size_small = 20
-    font_color = (255, 255, 255)
+    font_color = (128, 128, 128)
     font_big = pygame.font.Font(FONTPATH, font_size_big)
     font_small = pygame.font.Font(FONTPATH, font_size_small)
     surface = screen.convert_alpha()
     surface.fill((127, 255, 212, 2))
-    text = font_big.render('Game Over!', True, font_color)
+    text = font_big.render(f'Score {score}', True, font_color)
     text_rect = text.get_rect()
     text_rect.centerx, text_rect.centery = SCREENSIZE[0]/2, SCREENSIZE[1]/2-50
     surface.blit(text, text_rect)
@@ -116,19 +118,6 @@ def endInterface(screen):
                 if text_restart_rect.collidepoint(pygame.mouse.get_pos()):
                     return True
         pygame.display.update()
-
-def functionButton(screen):
-    font_size_small = 50
-    font_color = (255, 255, 255)
-    font_small = pygame.font.Font(FONTPATH, font_size_small)
-    text_AI = font_small.render('Help', True, font_color)
-    start_x = BLOCK_SIZE * GAME_MATRIX_SIZE[1] + MARGIN_SIZE * (GAME_MATRIX_SIZE[1] + 1)
-    text_AI_rect = text_AI.get_rect()
-    
-    button_width, button_height = 143, 65
-    pygame.draw.rect(screen, (204, 204, 204), (370, SCREENSIZE[1]-70, button_width, button_height))
-    screen.blit(text_AI, (start_x+10,SCREENSIZE[1]-70))
-    return (370, SCREENSIZE[1]-70, button_width, button_height)
 
 def is_rect(pos,rect):
     x,y =pos
@@ -178,16 +167,16 @@ def main():
     # 游戏主循环
     clock = pygame.time.Clock()
     is_running = True
+    automate = False
     while is_running:
         screen.fill(pygame.Color(BG_COLOR))
-        # AI_rect = functionButton(screen)
         # --按键检测
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
+                if event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT] and (not automate):
                     ismove,movescore,state = game.move(game.matrix,{pygame.K_UP: 'w', pygame.K_DOWN: 's', pygame.K_LEFT: 'a', pygame.K_RIGHT: 'd'}[event.key])
                     game.score += movescore
                     if ismove:
@@ -200,16 +189,22 @@ def main():
                     game.score += movescore
                     if ismove:
                         game.generate()
-            # elif event.type == pygame.MOUSEBUTTONDOWN:
-            #     if is_rect(event.pos,AI_rect):
-            #         action = predict(game.matrix.copy())
-            #         ismove,movescore,nextstate = game.move(game.matrix,action)
-            #         game.matrix = nextstate
-            #         game.score += movescore
-            #         if ismove:
-            #             game.generate()
-        if game.isover:
-            is_running = False
+                if event.key == pygame.K_a:
+                    while not game.isover:
+                        action = predict(game.matrix.copy())
+                        ismove, movescore, nextstate = game.move(
+                            game.matrix, action)
+                        game.matrix = nextstate
+                        game.score += movescore
+                        if ismove:
+                            game.generate()
+                        drawGameMatrix(screen, game.matrix)
+                        # drawScore(screen, game.score)
+                        pygame.display.update()
+                        clock.tick(FPS)
+            if game.isover:
+                is_running = False
+                break
         
         drawGameMatrix(screen, game.matrix)
         drawScore(screen, game.score)
@@ -218,7 +213,7 @@ def main():
         pygame.display.update()
         clock.tick(FPS)
   
-    return endInterface(screen)
+    return endInterface(screen, game.score)
 
 
 '''run'''
