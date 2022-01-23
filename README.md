@@ -10,17 +10,17 @@
 
 * Press `r` to restart the whole game
 
-<img src="./resources/game.png" style="zoom:50%;" />
+<img src="./resources/game4.png" style="zoom:50%;" />
 
 *NOTE*
 
 * run `python play3.py` to start a 3X3 2048 game
 
-<img src="/Users/gus/Library/Application Support/typora-user-images/Screen Shot 2022-01-23 at 4.27.09 PM.png" alt="Screen Shot 2022-01-23 at 4.27.09 PM" style="zoom:50%;" />
+<img src="./resources/game3.png" style="zoom:50%;" />
 
 * run `python play5.py` to start a 5X5 2048 game
 
-<img src="/Users/gus/Library/Application Support/typora-user-images/Screen Shot 2022-01-23 at 4.26.40 PM.png" alt="Screen Shot 2022-01-23 at 4.26.40 PM" style="zoom: 50%;" />
+<img src="./resources/game5.png" style="zoom:50%;" />
 
 If AI agent takes over the game from the beginning, you will achieve:
 
