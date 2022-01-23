@@ -5,6 +5,7 @@
 ### Python ###
 # Byte-compiled / optimized / DLL files
 .DS_Store
+pick.py
 __pycache__/
 *.py[cod]
 *$py.class

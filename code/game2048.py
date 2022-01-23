@@ -8,6 +8,18 @@ import numpy as np
 import random
 import os
 
+seed = 227
+np.random.seed(seed)
+random.seed(seed)
+
+
+def non_zero(state):
+    count = 0
+    for i in state:
+        for j in i:
+            if j > 0:
+                count += 1
+    return count
 class Game2048:
     def __init__(self,matrix_size=4):
         self.matrix_size = matrix_size #方格尺寸

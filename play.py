@@ -6,7 +6,7 @@ import sys
 import torch
 sys.path.append("./code")
 import numpy as np
-from game2048 import Game2048
+from game2048 import Game2048, non_zero
 from network import *
 import math
 
@@ -160,8 +160,8 @@ def main():
     screen = pygame.display.set_mode(SCREENSIZE)
     pygame.display.set_caption('2048')
     # 播放背景音乐
-    pygame.mixer.music.load(BGMPATH)
-    pygame.mixer.music.play(-1)
+    # pygame.mixer.music.load(BGMPATH)
+    # pygame.mixer.music.play(-1)
     # 实例化2048游戏
     game = Game2048()
     # 游戏主循环
@@ -189,6 +189,8 @@ def main():
                     game.score += movescore
                     if ismove:
                         game.generate()
+                elif event.key == pygame.K_r:
+                    return True
                 if event.key == pygame.K_a:
                     while not game.isover:
                         action = predict(game.matrix.copy())
