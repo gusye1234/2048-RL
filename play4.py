@@ -153,6 +153,13 @@ def predict(state):
             return action
 
 
+def random_predict(state):
+    actionScore = np.array([0.25]*4)
+    legals = Game2048.legal_moves(state)
+    for action in np.argsort(-actionScore):
+        if action in legals:
+            return action
+
 '''主程序'''
 def main():
     # 游戏初始化
@@ -189,11 +196,22 @@ def main():
                     game.score += movescore
                     if ismove:
                         game.generate()
-                elif event.key == pygame.K_r:
-                    return True
                 if event.key == pygame.K_a:
                     while not game.isover:
                         action = predict(game.matrix.copy())
+                        ismove, movescore, nextstate = game.move(
+                            game.matrix, action)
+                        game.matrix = nextstate
+                        game.score += movescore
+                        if ismove:
+                            game.generate()
+                        drawGameMatrix(screen, game.matrix)
+                        drawScore(screen, game.score)
+                        pygame.display.update()
+                        clock.tick(FPS)
+                if event.key == pygame.K_r:
+                    while not game.isover:
+                        action = random_predict(game.matrix.copy())
                         ismove, movescore, nextstate = game.move(
                             game.matrix, action)
                         game.matrix = nextstate

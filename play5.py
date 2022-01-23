@@ -12,7 +12,7 @@ import math
 import time
 
 '''FPS'''
-FPS = 60
+FPS = 120
 
 BG_COLOR = '#92877d'
 
@@ -154,6 +154,12 @@ def predict(state):
         if action in legals:
             return action
 
+def random_predict(state):
+    actionScore = np.array([0.25]*4)
+    legals = Game2048.legal_moves(state)
+    for action in np.argsort(-actionScore):
+        if action in legals:
+            return action
 
 '''主程序'''
 def main():
@@ -195,6 +201,20 @@ def main():
                     while not game.isover:
                         # time.sleep(0.2)
                         action = predict(game.matrix.copy())
+                        ismove, movescore, nextstate = game.move(
+                            game.matrix, action)
+                        game.matrix = nextstate
+                        game.score += movescore
+                        if ismove:
+                            game.generate()
+                        drawGameMatrix(screen, game.matrix)
+                        drawScore(screen, game.score)
+                        pygame.display.update()
+                        clock.tick(FPS)
+                if event.key == pygame.K_r:
+                    while not game.isover:
+                        time.sleep(0.04)
+                        action = random_predict(game.matrix.copy())
                         ismove, movescore, nextstate = game.move(
                             game.matrix, action)
                         game.matrix = nextstate
